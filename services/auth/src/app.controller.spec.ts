@@ -19,4 +19,22 @@ describe('AppController', () => {
       expect(appController.getHello()).toBe('Hello World!');
     });
   });
+
+  describe('register', () => {
+    it('should return "Register!"', () => {
+      expect(appController.register()).toBe('Register!');
+    });
+  });
+
+  describe('login', () => {
+    it('should return "Login!"', () => {
+      expect(appController.login()).toBe('Login!');
+    });
+  });
+
+  describe('logout', () => {
+    it('should return "Logout!"', () => {
+      expect(appController.logout()).toBe('Logout!');
+    });
+  });
 });
