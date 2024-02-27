@@ -3,7 +3,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { User } from './schemas/user.schema';
 import { getModelToken } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 
 const userMock: User = {
   name: 'test',
@@ -40,15 +39,18 @@ describe('AppController', () => {
 
   describe('register', () => {
     it('should return registered user', async () => {
-      const registeredUser = await appController.register();
+      const registeredUser = await appController.register(userMock);
       expect(registeredUser).toBe(userMock);
     });
   });
 
   describe('login', () => {
     it('should return user', async () => {
-      const loggedInUser = await appController.login();
-      expect(loggedInUser).toEqual([userMock]);
+      const loggedInUser = await appController.login({
+        password: userMock.password,
+        name: userMock.name,
+      });
+      expect(loggedInUser.name).toEqual(userMock.name);
     });
   });
 

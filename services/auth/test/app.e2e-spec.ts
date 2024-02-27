@@ -25,7 +25,7 @@ beforeAll(async () => {
 describe('AppController (e2e)', () => {
   beforeEach(async () => {});
 
-  it('/login (POST)', () => {
+  it('/auth/login (POST)', () => {
     return request(app.getHttpServer()).post('/login').expect(201).expect([]);
   });
 });
