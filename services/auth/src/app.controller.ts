@@ -1,6 +1,5 @@
 import { Body, Controller, Post, UsePipes } from '@nestjs/common';
 import { AppService } from './app.service';
-import { User } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ZodValidationPipe } from './pipes/zod-validation.pipe';
 import { createUserSchema } from './dto/validators/create-user.validator';
@@ -13,7 +12,10 @@ export class AppController {
 
   @Post('/register')
   @UsePipes(new ZodValidationPipe(createUserSchema))
-  register(@Body() createUserDto: CreateUserDto): Promise<User> {
+  register(@Body() createUserDto: CreateUserDto): Promise<{
+    name: string;
+    email: string;
+  }> {
     return this.appService.register(createUserDto);
   }
 

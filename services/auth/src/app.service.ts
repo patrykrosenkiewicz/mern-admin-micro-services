@@ -13,14 +13,17 @@ export class AppService {
     private jwtService: JwtService,
   ) {}
 
-  async register(createUserDto: CreateUserDto): Promise<User> {
+  async register(createUserDto: CreateUserDto): Promise<{
+    name: string;
+    email: string;
+  }> {
     const saltOrRounds = 10;
     const mappedUser = {
       ...createUserDto,
       ...{ password: await bcrypt.hash(createUserDto.password, saltOrRounds) },
     };
-    const createdUser = new this.userModel(mappedUser);
-    return createdUser.save();
+    const createdUser = await new this.userModel(mappedUser).save();
+    return { name: createdUser.name, email: createdUser.email };
   }
   async login(loginBody: LoginBody): Promise<{ access_token: string }> {
     const user = await this.userModel
