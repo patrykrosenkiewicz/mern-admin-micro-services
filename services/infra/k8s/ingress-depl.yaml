@@ -3,16 +3,30 @@ kind: Ingress
 metadata:
   name: ingress-srv
   annotations:
-    kubernetes.io/ingress.class: nginx
+    spec: "ingressClassName"
 spec:
   rules:
     - host: mern-microservices.com
       http:
         paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: client-srv
+                port:
+                  number: 3000
           - path: /auth
             pathType: Prefix
             backend:
               service:
                 name: auth-srv
                 port:
-                  number: 3000
+                  number: 4000
+          - path: /monolith
+            pathType: Prefix
+            backend:
+              service:
+                name: monolith-be-srv
+                port:
+                  number: 3001

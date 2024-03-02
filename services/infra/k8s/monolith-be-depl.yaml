@@ -1,23 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: auth-depl
+  name: monolith-be-depl
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: auth
+      app: monolith-be
   template:
     metadata:
       labels:
-        app: auth
+        app: monolith-be
     spec:
       containers:
-        - name: auth
-          image: prosenkiewicz/auth
+        - name: monolith-be
+          image: prosenkiewicz/monolith-be
           env:
-            - name: MONGO_URI
-              value: "mongodb://auth-mongo-srv/auth"
+            - name: DATABASE
+              value: "mongodb://monolith-be-mongo-srv/monolith-be"
+            - name: PORT
+              value: "3001"
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
@@ -27,12 +29,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: auth-srv
+  name: monolith-be-srv
 spec:
   selector:
-      app: auth
+    app: monolith-be
   ports:
-    - name: auth
+    - name: monolith-be
       protocol: TCP
-      port: 4000
-      targetPort: 4000
+      port: 3001
+      targetPort: 3001
