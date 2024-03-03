@@ -19,7 +19,7 @@ spec:
             - name: DATABASE
               value: "mongodb://monolith-be-mongo-srv/monolith-be"
             - name: PORT
-              value: "3001"
+              value: "3000"
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
@@ -36,5 +36,5 @@ spec:
   ports:
     - name: monolith-be
       protocol: TCP
-      port: 3001
-      targetPort: 3001
+      port: 3000
+      targetPort: 3000

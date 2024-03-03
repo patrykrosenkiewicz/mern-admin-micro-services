@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-
 const createAdmin = require("./setup/setup")
 
 const bootstrap = async () => {
@@ -17,7 +16,7 @@ const bootstrap = async () => {
 
 // Connect to our Database and handle any bad connections
 // mongoose.connect(process.env.DATABASE);
-  mongoose.connect(process.env.DATABASE, {
+  await mongoose.connect(process.env.DATABASE, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useFindAndModify: false,
@@ -28,8 +27,8 @@ const bootstrap = async () => {
   mongoose.connection.on("error", (err) => {
     console.error(`🚫 Error → : ${err.message}`);
   });
-  await createAdmin();
 
+  await createAdmin()
   const glob = require("glob");
   const path = require("path");
 

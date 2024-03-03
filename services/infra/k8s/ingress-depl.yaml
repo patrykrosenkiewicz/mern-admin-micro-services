@@ -10,23 +10,23 @@ spec:
       http:
         paths:
           - path: /
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: client-srv
                 port:
                   number: 3000
           - path: /auth
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: auth-srv
                 port:
-                  number: 4000
-          - path: /monolith
-            pathType: Prefix
+                  number: 3000
+          - path: /api
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: monolith-be-srv
                 port:
-                  number: 3001
+                  number: 3000

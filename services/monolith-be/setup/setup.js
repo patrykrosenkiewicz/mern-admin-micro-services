@@ -11,11 +11,9 @@ async function createAdmin() {
       surname: "demo",
     }).save();
     console.log("👍👍👍👍👍👍👍👍 Admin created : Done!");
-    process.exit();
   } catch (e) {
     console.log("\n👎👎👎👎👎👎👎👎 Error! The Error info is below");
     console.log(e);
-    process.exit();
   }
 }
 

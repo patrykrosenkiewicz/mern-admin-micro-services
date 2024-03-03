@@ -14,10 +14,11 @@ spec:
     spec:
       containers:
         - name: auth
+          imagePullPolicy: Never
           image: prosenkiewicz/auth
           env:
             - name: MONGO_URI
-              value: "mongodb://auth-mongo-srv/auth"
+              value: "mongodb://auth-mongo-srv:27017/auth"
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
@@ -34,5 +35,5 @@ spec:
   ports:
     - name: auth
       protocol: TCP
-      port: 4000
-      targetPort: 4000
+      port: 3000
+      targetPort: 3000

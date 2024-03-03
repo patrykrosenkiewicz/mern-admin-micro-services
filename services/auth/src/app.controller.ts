@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UsePipes } from '@nestjs/common';
+import { Body, Controller, Get, Post, UsePipes } from '@nestjs/common';
 import { AppService } from './app.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ZodValidationPipe } from './pipes/zod-validation.pipe';
@@ -28,5 +28,9 @@ export class AppController {
   @Post('/logout')
   logout(): string {
     return this.appService.logout();
+  }
+  @Get('/')
+  alive(): string {
+    return 'ALIVE';
   }
 }

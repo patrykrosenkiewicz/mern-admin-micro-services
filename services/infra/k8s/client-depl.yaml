@@ -16,8 +16,8 @@ spec:
         - name: client
           image: prosenkiewicz/client
           env:
-            - name: API_BASE_URL
-              value: "mern-microservices.com"
+            - name: REACT_APP_API_BASE_URL
+              value: "http://mern-microservices.com/api/"
 ---
 apiVersion: v1
 kind: Service
