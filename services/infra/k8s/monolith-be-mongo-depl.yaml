@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: monolith-be-mongo-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: monolith-be-mongo
+  template:
+    metadata:
+      labels:
+        app: monolith-be-mongo
+    spec:
+      containers:
+        - name: monolith-be-mongo
+          image: mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: monolith-be-mongo-srv
+spec:
+  selector:
+    app: monolith-be-mongo
+  ports:
+    - name: monolith-be-mongo
+      protocol: TCP
+      port: 27017
+      targetPort: 27017

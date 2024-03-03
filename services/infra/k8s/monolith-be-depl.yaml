@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: monolith-be-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: monolith-be
+  template:
+    metadata:
+      labels:
+        app: monolith-be
+    spec:
+      containers:
+        - name: monolith-be
+          image: prosenkiewicz/monolith-be
+          env:
+            - name: DATABASE
+              value: "mongodb://monolith-be-mongo-srv/monolith-be"
+            - name: PORT
+              value: "3000"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret
+                  key: password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: monolith-be-srv
+spec:
+  selector:
+    app: monolith-be
+  ports:
+    - name: monolith-be
+      protocol: TCP
+      port: 3000
+      targetPort: 3000
