@@ -5,3 +5,9 @@ export const userMock: User = {
   email: 'test@test.com',
   password: 'qwert12345',
 };
+
+export const userMockLoginTest: User = {
+  name: 'testLogin',
+  email: 'testLogin@test.com',
+  password: 'qwert12345',
+};

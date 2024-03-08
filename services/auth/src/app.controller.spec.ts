@@ -65,7 +65,7 @@ describe('AppController', () => {
     it('should return user', async () => {
       const access_token = await appController.login({
         password: userMock.password,
-        name: userMock.name,
+        email: userMock.email,
       });
       expect(access_token).not.toBe('');
     });
