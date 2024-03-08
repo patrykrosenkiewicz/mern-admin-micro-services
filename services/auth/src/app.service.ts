@@ -1,9 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schemas/user.schema';
 import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
-import { LoginBody } from './types/login-body.type';
+import { LoginBody, LoginResponse } from './types/login.type';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 @Injectable()
@@ -25,18 +29,26 @@ export class AppService {
     const createdUser = await new this.userModel(mappedUser).save();
     return { name: createdUser.name, email: createdUser.email };
   }
-  async login(loginBody: LoginBody): Promise<{ access_token: string }> {
+  async login(loginBody: LoginBody): Promise<LoginResponse> {
     const user = await this.userModel
-      .findOne({ name: { $eq: loginBody.name } })
+      .findOne({ email: { $eq: loginBody.email } })
       .exec();
 
+    if (!user) {
+      throw new NotFoundException();
+    }
     const isMatch = await bcrypt.compare(loginBody.password, user.password);
     if (!isMatch) {
-      throw new Error('User data missmatch');
+      throw new UnauthorizedException();
     }
     const payload = { sub: user.id, username: user.name };
     return {
-      access_token: await this.jwtService.signAsync(payload),
+      success: true,
+      result: {
+        token: await this.jwtService.signAsync(payload),
+        admin: { ...user, ...{ isLoggedIn: true } },
+      },
+      message: 'Successfully login admin',
     };
   }
 

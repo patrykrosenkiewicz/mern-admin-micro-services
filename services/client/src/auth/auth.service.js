@@ -1,4 +1,4 @@
-import { API_BASE_URL, ACCESS_TOKEN_NAME } from "@/config/serverApiConfig";
+import { MICROSERVICES_API_BASE_URL, ACCESS_TOKEN_NAME } from "@/config/serverApiConfig";
 
 import axios from "axios";
 import errorHandler from "@/request/errorHandler";
@@ -9,9 +9,9 @@ import { getCookie, setCookie, deleteCookie } from "./cookie";
 
 export const login = async (loginAdminData) => {
   try {
-    console.log("API_BASE_URL: ", API_BASE_URL)
+    console.log("MICROSERVICES_API_BASE_URL: ", MICROSERVICES_API_BASE_URL)
     const response = await axios.post(
-      API_BASE_URL + `login?timestamp=${new Date().getTime()}`,
+      MICROSERVICES_API_BASE_URL + `auth/login?timestamp=${new Date().getTime()}`,
       loginAdminData
     );
     token.set(response.data.result.token);
