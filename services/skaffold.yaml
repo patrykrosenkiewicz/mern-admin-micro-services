@@ -15,8 +15,40 @@ build:
             dest: .
       docker:
         dockerfile: Dockerfile
+    - image: prosenkiewicz/admin
+      context: admin
+      sync:
+        manual:
+          - src: "src/**/*.ts"
+            dest: .
+      docker:
+        dockerfile: Dockerfile
+    - image: prosenkiewicz/lead
+      context: lead
+      sync:
+        manual:
+          - src: "src/**/*.ts"
+            dest: .
+      docker:
+        dockerfile: Dockerfile
+    - image: prosenkiewicz/product
+      context: product
+      sync:
+        manual:
+          - src: "src/**/*.ts"
+            dest: .
+      docker:
+        dockerfile: Dockerfile
     - image: prosenkiewicz/client
       context: client
+      sync:
+        manual:
+          - src: "src/**/*.ts"
+            dest: .
+      docker:
+        dockerfile: Dockerfile
+    - image: prosenkiewicz/client-fe
+      context: client-fe
       sync:
         manual:
           - src: "**/*.js"

@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -15,6 +16,7 @@ export class AppService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
     private jwtService: JwtService,
+    private readonly logger: Logger,
   ) {}
 
   async register(createUserDto: CreateUserDto): Promise<{
@@ -35,18 +37,29 @@ export class AppService {
       .exec();
 
     if (!user) {
+      this.logger.error(`Auth service: no user for ${loginBody.email}`);
       throw new NotFoundException();
     }
     const isMatch = await bcrypt.compare(loginBody.password, user.password);
     if (!isMatch) {
       throw new UnauthorizedException();
     }
-    const payload = { sub: user.id, username: user.name };
+    const result = await this.userModel
+      .findOneAndUpdate(
+        { _id: user._id },
+        { isLoggedIn: true },
+        {
+          new: true,
+        },
+      )
+      .exec();
+
+    const payload = { id: result._id };
     return {
       success: true,
       result: {
         token: await this.jwtService.signAsync(payload),
-        admin: { ...user, ...{ isLoggedIn: true } },
+        admin: result,
       },
       message: 'Successfully login admin',
     };

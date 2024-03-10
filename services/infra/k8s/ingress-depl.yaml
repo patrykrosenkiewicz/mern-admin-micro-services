@@ -13,7 +13,7 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: client-srv
+                name: client-fe-srv
                 port:
                   number: 3000
           - path: /service/auth
@@ -21,6 +21,34 @@ spec:
             backend:
               service:
                 name: auth-srv
+                port:
+                  number: 3000
+          - path: /service/admin
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: admin-srv
+                port:
+                  number: 3000
+          - path: /service/lead
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: lead-srv
+                port:
+                  number: 3000
+          - path: /service/product
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: product-srv
+                port:
+                  number: 3000
+          - path: /service/client
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: client-srv
                 port:
                   number: 3000
           - path: /api
