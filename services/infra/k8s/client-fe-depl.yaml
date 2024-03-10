@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: client-depl
+  name: client-fe-depl
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: client
+      app: client-fe
   template:
     metadata:
       labels:
-        app: client
+        app: client-fe
     spec:
       containers:
         - name: client-fe
-          image: prosenkiewicz/client
+          image: prosenkiewicz/client-fe
           env:
             - name: REACT_APP_API_BASE_URL
               value: "http://mern-microservices.com/api/"
@@ -25,10 +25,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: client-srv
+  name: client-fe-srv
 spec:
   selector:
-    app: client
+    app: client-fe
   ports:
     - name: client-fe
       protocol: TCP

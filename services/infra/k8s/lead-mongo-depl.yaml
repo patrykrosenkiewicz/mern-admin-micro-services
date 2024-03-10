@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lead-mongo-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lead-mongo
+  template:
+    metadata:
+      labels:
+        app: lead-mongo
+    spec:
+      containers:
+        - name: lead-mongo
+          image: mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lead-mongo-srv
+spec:
+  selector:
+    app: lead-mongo
+  ports:
+    - name: lead-mongo
+      protocol: TCP
+      port: 27017
+      targetPort: 27017

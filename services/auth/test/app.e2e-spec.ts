@@ -54,6 +54,9 @@ describe('AppController (e2e)', () => {
         password: userMockLoginTest.password,
       })
       .expect(201)
-      .expect(({ body }) => expect(body.token).not.toEqual(''));
+      .expect(({ body }) => {
+        expect(body.result.token).not.toEqual('');
+        expect(body.result.admin.isLoggedIn).toEqual(true);
+      });
   });
 });
