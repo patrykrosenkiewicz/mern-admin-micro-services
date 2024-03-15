@@ -16,6 +16,9 @@ spec:
         - name: client
           imagePullPolicy: Never
           image: prosenkiewicz/client
+          env:
+            - name: MONGO_URI
+              value: "mongodb://client-mongo-srv:27017/client"
 ---
 apiVersion: v1
 kind: Service

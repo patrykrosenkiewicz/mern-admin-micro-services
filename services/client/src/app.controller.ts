@@ -14,6 +14,7 @@ import { CreateClientDto } from './dto/create-client.dto';
 import { ZodValidationPipe } from './pipes/zod-validation.pipe';
 import { createClientSchema } from './dto/validators/create-client.validator';
 import { Client } from './dto/schemas/client.schema';
+import { UpdateClientDto } from './dto/update-client.dto';
 
 @Controller('/service/client')
 export class AppController {
@@ -33,9 +34,9 @@ export class AppController {
   @Patch('update/:id')
   async updateClient(
     @Param('id') id: string,
-    @Body() clientData: CreateClientDto,
+    @Body() updateClientData: UpdateClientDto,
   ): Promise<Client> {
-    return this.appService.updateClient(id, clientData);
+    return this.appService.updateClient(id, updateClientData);
   }
 
   @Delete('delete/:id')
