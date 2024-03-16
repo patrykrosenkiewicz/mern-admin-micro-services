@@ -15,6 +15,9 @@ import { ZodValidationPipe } from './pipes/zod-validation.pipe';
 import { createClientSchema } from './dto/validators/create-client.validator';
 import { Client } from './dto/schemas/client.schema';
 import { UpdateClientDto } from './dto/update-client.dto';
+import { PaginationDto } from './dto/pagination.dto';
+import { paginationValidator } from './dto/validators/pagination.validator';
+import { ClientListResponse } from './types/client-list-response.type';
 
 @Controller('/service/client')
 export class AppController {
@@ -50,7 +53,11 @@ export class AppController {
   }
 
   @Get('list')
-  async listClients(): Promise<Client[]> {
-    return this.appService.listClients();
+  @UsePipes(new ZodValidationPipe(paginationValidator))
+  async listClients(
+    @Query() paginationDto: PaginationDto,
+  ): Promise<ClientListResponse> {
+    const { page, limit } = paginationDto;
+    return this.appService.listClients(page, limit);
   }
 }

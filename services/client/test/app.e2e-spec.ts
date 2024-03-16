@@ -97,6 +97,7 @@ describe('AppController (e2e)', () => {
   it(`${BASE_URL}/update/:id (PATCH)`, async () => {
     const testClient = new clientModel(clientDataExisting);
     await testClient.save();
+
     const UPDATED_CLIENT_NAME = 'updated client name';
     const client = await clientModel.findOne({
       company: { $eq: clientDataExisting.company },
@@ -114,26 +115,38 @@ describe('AppController (e2e)', () => {
   it(`${BASE_URL}/delete/:id (DELETE)`, async () => {
     const testClient = new clientModel(clientDataExisting);
     await testClient.save();
+    const testClient2 = new clientModel(clientData);
+    await testClient2.save();
     const client = await clientModel.findOne({
       company: { $eq: clientDataExisting.company },
     });
 
     return request(app.getHttpServer())
       .delete(`${BASE_URL}/delete/${client.id}`)
-      .expect(200);
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body.name).toEqual(clientDataExisting.name);
+      });
   });
 
   it(`${BASE_URL}/search (GET)`, async () => {
-    // Provide valid query parameters for searching
-    // Example: { name: 'Client Name' }
+    const testClient = new clientModel(clientDataExisting);
+    await testClient.save();
+    const testClient2 = new clientModel(clientData);
+    await testClient2.save();
     const queryParams = {
-      // Provide valid query parameters for searching
+      name: clientDataExisting.name,
+      company: clientDataExisting.company,
     };
 
     return request(app.getHttpServer())
       .get(`${BASE_URL}/search`)
       .query(queryParams)
-      .expect(200);
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body.length).toEqual(1);
+        expect(body[0].name).toEqual(clientDataExisting.name);
+      });
   });
 
   it(`${BASE_URL}/list (GET)`, async () => {
@@ -144,8 +157,19 @@ describe('AppController (e2e)', () => {
       .get(`${BASE_URL}/list`)
       .expect(200)
       .expect(({ body }) => {
-        expect(body.length).toEqual(1);
-        expect(body[0].name).toEqual(clientDataExisting.name);
+        expect(body.data.length).toEqual(1);
+        expect(body.data[0].name).toEqual(clientDataExisting.name);
+      });
+  });
+
+  it(`${BASE_URL}/list not existing page (GET)`, async () => {
+    const testClient = new clientModel(clientDataExisting);
+    await testClient.save();
+
+    return request(app.getHttpServer())
+      .get(`${BASE_URL}/list?page=3`)
+      .expect(({ body }) => {
+        expect(body.data.length).toEqual(0);
       });
   });
 });

@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { Client } from './dto/schemas/client.schema';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
+import { ClientListResponse } from './types/client-list-response.type';
 
 @Injectable()
 export class AppService {
@@ -41,7 +42,16 @@ export class AppService {
     return this.clientModel.find(query).exec();
   }
 
-  async listClients(): Promise<Client[]> {
-    return this.clientModel.find().exec();
+  async listClients(page: number, limit: number): Promise<ClientListResponse> {
+    const skip = (page - 1) * limit;
+    // return await this.clientModel.find().skip(skip).limit(limit).exec();
+    const count = await this.clientModel.countDocuments({}).exec();
+    const page_total = Math.floor((count - 1) / limit) + 1;
+    const data = await this.clientModel.find().limit(limit).skip(skip).exec();
+    return {
+      data: data,
+      count: page_total,
+      status: 200,
+    };
   }
 }
