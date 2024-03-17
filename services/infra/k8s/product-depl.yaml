@@ -16,6 +16,9 @@ spec:
         - name: product
           imagePullPolicy: Never
           image: prosenkiewicz/product
+          env:
+            - name: MONGO_URI
+              value: "mongodb://product-mongo-srv:27017/product"
 ---
 apiVersion: v1
 kind: Service

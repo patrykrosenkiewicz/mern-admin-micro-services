@@ -16,6 +16,9 @@ spec:
         - name: lead
           imagePullPolicy: Never
           image: prosenkiewicz/lead
+          env:
+            - name: MONGO_URI
+              value: "mongodb://lead-mongo-srv:27017/lead"
 ---
 apiVersion: v1
 kind: Service

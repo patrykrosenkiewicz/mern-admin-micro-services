@@ -16,6 +16,9 @@ spec:
         - name: admin
           imagePullPolicy: Never
           image: prosenkiewicz/admin
+          env:
+            - name: MONGO_URI
+              value: "mongodb://admin-mongo-srv:27017/admin"
 ---
 apiVersion: v1
 kind: Service

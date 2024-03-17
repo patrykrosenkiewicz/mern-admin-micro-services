@@ -69,19 +69,25 @@ describe('AppController (e2e)', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
     clientModel = moduleFixture.get<Model<Client>>(getModelToken('Client'));
-    const testClient = new clientModel(clientDataExisting);
-    await testClient.save();
+  });
+
+  beforeEach(async () => {
+    await clientModel.deleteMany({});
   });
 
   it(`${BASE_URL}/create (POST)`, async () => {
     return request(app.getHttpServer())
       .post(`${BASE_URL}/create`)
       .send(clientData)
-      .expect(201);
+      .expect(201)
+      .expect(({ body }) => {
+        expect(Object.keys(body)).toEqual(['result', 'message', 'success']);
+      });
   });
 
   it(`${BASE_URL}/read/:id (GET)`, async () => {
-    // Replace ':id' with an actual ID for the client
+    const testClient = new clientModel(clientDataExisting);
+    await testClient.save();
     const client = await clientModel.findOne({
       company: { $eq: clientDataExisting.company },
     });
@@ -92,46 +98,116 @@ describe('AppController (e2e)', () => {
   });
 
   it(`${BASE_URL}/update/:id (PATCH)`, async () => {
-    // Replace ':id' with an actual ID for the client
+    const testClient = new clientModel(clientDataExisting);
+    await testClient.save();
+
+    const UPDATED_CLIENT_NAME = 'updated client name';
     const client = await clientModel.findOne({
       company: { $eq: clientDataExisting.company },
     });
-    const updatedClientData = {
-      // Provide updated client data
-      // Example: { name: 'Updated Client Name' }
-    };
 
     return request(app.getHttpServer())
       .patch(`${BASE_URL}/update/${client.id}`)
-      .send(updatedClientData)
-      .expect(200);
+      .send({ name: UPDATED_CLIENT_NAME })
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body.result.name).toEqual(UPDATED_CLIENT_NAME);
+        expect(Object.keys(body)).toEqual(['result', 'message', 'success']);
+      });
   });
 
   it(`${BASE_URL}/delete/:id (DELETE)`, async () => {
-    // Replace ':id' with an actual ID for the client
+    const testClient = new clientModel(clientDataExisting);
+    await testClient.save();
+    const testClient2 = new clientModel(clientData);
+    await testClient2.save();
     const client = await clientModel.findOne({
       company: { $eq: clientDataExisting.company },
     });
 
     return request(app.getHttpServer())
       .delete(`${BASE_URL}/delete/${client.id}`)
-      .expect(200);
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body.result.name).toEqual(clientDataExisting.name);
+        expect(Object.keys(body)).toEqual(['result', 'message', 'success']);
+      });
   });
 
   it(`${BASE_URL}/search (GET)`, async () => {
-    // Provide valid query parameters for searching
-    // Example: { name: 'Client Name' }
+    const testClient = new clientModel(clientDataExisting);
+    await testClient.save();
+    const testClient2 = new clientModel(clientData);
+    await testClient2.save();
+
     const queryParams = {
-      // Provide valid query parameters for searching
+      fields: 'name,company,surname',
+      q: 'Mock Company EXISTS',
     };
 
     return request(app.getHttpServer())
       .get(`${BASE_URL}/search`)
       .query(queryParams)
-      .expect(200);
+      .expect(200)
+      .expect(({ body }) => {
+        expect(Object.keys(body)).toEqual(['result', 'message', 'success']);
+        expect(body.result.length).toEqual(1);
+        expect(body.result[0].name).toEqual(clientDataExisting.name);
+      });
+  });
+
+  it(`${BASE_URL}/search not existing client (GET)`, async () => {
+    const testClient = new clientModel(clientDataExisting);
+    await testClient.save();
+    const testClient2 = new clientModel(clientData);
+    await testClient2.save();
+    const queryParams = {
+      fields: 'name,company,surname',
+      q: '12312321321312321321',
+    };
+
+    return request(app.getHttpServer())
+      .get(`${BASE_URL}/search`)
+      .query(queryParams)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(Object.keys(body)).toEqual(['result', 'message', 'success']);
+        expect(body.result.length).toEqual(0);
+      });
   });
 
   it(`${BASE_URL}/list (GET)`, async () => {
-    return request(app.getHttpServer()).get(`${BASE_URL}/list`).expect(200);
+    const testClient = new clientModel(clientDataExisting);
+    await testClient.save();
+
+    return request(app.getHttpServer())
+      .get(`${BASE_URL}/list`)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(Object.keys(body)).toEqual([
+          'result',
+          'pagination',
+          'message',
+          'success',
+        ]);
+        expect(Object.keys(body.pagination)).toEqual([
+          'page',
+          'pages',
+          'count',
+        ]);
+        expect(body.result.length).toEqual(1);
+        expect(body.result[0].name).toEqual(clientDataExisting.name);
+      });
+  });
+
+  it(`${BASE_URL}/list not existing page (GET)`, async () => {
+    const testClient = new clientModel(clientDataExisting);
+    await testClient.save();
+
+    return request(app.getHttpServer())
+      .get(`${BASE_URL}/list?page=3`)
+      .expect(({ body }) => {
+        expect(body.result.length).toEqual(0);
+      });
   });
 });

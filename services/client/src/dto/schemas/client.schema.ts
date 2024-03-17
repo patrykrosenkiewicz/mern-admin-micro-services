@@ -7,31 +7,31 @@ export type ClientDocument = HydratedDocument<Client>;
 @Schema({ timestamps: true })
 export class Client {
   enabled: string;
-  @Prop({ required: true })
+  @Prop({ required: false })
   company: string;
   @Prop({ required: true })
   name: string;
   @Prop({ required: true })
   surname: string;
-  @Prop({ required: true })
+  @Prop({ required: false })
   bankAccount: string;
-  @Prop({ required: true })
+  @Prop({ required: false })
   companyRegNumber: string;
-  @Prop({ required: true })
+  @Prop({ required: false })
   companyTaxNumber: string;
-  @Prop({ required: true })
+  @Prop({ required: false })
   companyTaxID: string;
-  @Prop({ required: true })
+  @Prop({ required: false })
   customField: ClientCustomField;
-  @Prop({ required: true })
+  @Prop({ required: false })
   address: string;
-  @Prop({ required: true })
+  @Prop({ required: false })
   country: string;
   @Prop({ required: true })
   phone: string;
   @Prop({ required: true })
   email: string;
-  @Prop({ required: true })
+  @Prop({ required: false })
   website: string;
 }
 
