@@ -19,16 +19,17 @@ export default function ReadItem({ config }) {
     console.log("readColumns :", readColumns);
     if (isFirstRun.current) {
       isFirstRun.current = false;
-      return;
+    } else {
+      const list = [];
+      readColumns.map((props) => {
+        const propsKey = props.dataIndex;
+        const propsTitle = props.title;
+        const value = valueByString(currentResult, propsKey);
+        list.push({ propsKey, label: propsTitle, value: value });
+      });
+      setListState(list);
     }
-    const list = [];
-    readColumns.map((props) => {
-      const propsKey = props.dataIndex;
-      const propsTitle = props.title;
-      const value = valueByString(currentResult, propsKey);
-      list.push({ propsKey, label: propsTitle, value: value });
-    });
-    setListState(list);
+
   }, [currentResult]);
 
   const show = isReadBoxOpen

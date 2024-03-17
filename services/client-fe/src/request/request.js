@@ -1,21 +1,15 @@
 import axios from "axios";
-import { API_BASE_URL, ACCESS_TOKEN_NAME } from "@/config/serverApiConfig";
+import {API_BASE_URL, ACCESS_TOKEN_NAME, MICROSERVICES_API_BASE_URL} from "@/config/serverApiConfig";
 import { token as tokenCookies } from "@/auth";
 import errorHandler from "./errorHandler";
 import successHandler from "./successHandler";
+import {getAxiosInstance} from "@/request/axiosInit";
 
 const headersInstance = { [ACCESS_TOKEN_NAME]: tokenCookies.get() };
 
-const axiosInstance = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 30000,
-  headers: {
-    ...headersInstance,
-  },
-});
-
 const request = {
   create: async (entity, jsonData) => {
+    const axiosInstance = getAxiosInstance(entity);
     axiosInstance.defaults.headers = {
       ...headersInstance,
     };
@@ -28,6 +22,7 @@ const request = {
     }
   },
   read: async (entity, id) => {
+    const axiosInstance = getAxiosInstance(entity);
     axiosInstance.defaults.headers = {
       ...headersInstance,
     };
@@ -39,6 +34,7 @@ const request = {
     }
   },
   update: async (entity, id, jsonData) => {
+    const axiosInstance = getAxiosInstance(entity);
     axiosInstance.defaults.headers = {
       ...headersInstance,
     };
@@ -54,6 +50,7 @@ const request = {
   },
 
   delete: async (entity, id, option = {}) => {
+    const axiosInstance = getAxiosInstance(entity);
     axiosInstance.defaults.headers = {
       ...headersInstance,
     };
@@ -66,6 +63,7 @@ const request = {
   },
 
   filter: async (entity, option = {}) => {
+    const axiosInstance = getAxiosInstance(entity);
     axiosInstance.defaults.headers = {
       ...headersInstance,
     };
@@ -82,6 +80,7 @@ const request = {
   },
 
   search: async (entity, source, option = {}) => {
+    const axiosInstance = getAxiosInstance(entity);
     axiosInstance.defaults.headers = {
       [ACCESS_TOKEN_NAME]: tokenCookies.get(),
     };
@@ -104,6 +103,8 @@ const request = {
   },
 
   list: async (entity, option = {}) => {
+
+    const axiosInstance = getAxiosInstance(entity);
     axiosInstance.defaults.headers = {
       [ACCESS_TOKEN_NAME]: tokenCookies.get(),
     };
@@ -115,7 +116,6 @@ const request = {
         let items = option.items ? "&items=" + option.items : "";
         query = `?${page}${items}`;
       }
-
       const response = await axiosInstance.get(entity + "/list" + query);
       return successHandler(response);
     } catch (error) {
@@ -124,6 +124,7 @@ const request = {
   },
 
   post: async (entityUrl, jsonData, option = {}) => {
+    const axiosInstance = getAxiosInstance(entity);
     axiosInstance.defaults.headers = {
       ...headersInstance,
     };
@@ -135,6 +136,7 @@ const request = {
     }
   },
   get: async (entityUrl) => {
+    const axiosInstance = getAxiosInstance(entity);
     axiosInstance.defaults.headers = {
       ...headersInstance,
     };
@@ -146,6 +148,7 @@ const request = {
     }
   },
   patch: async (entityUrl, jsonData) => {
+    const axiosInstance = getAxiosInstance(entity);
     axiosInstance.defaults.headers = {
       ...headersInstance,
     };

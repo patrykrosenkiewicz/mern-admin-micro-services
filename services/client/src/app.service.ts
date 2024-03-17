@@ -5,6 +5,7 @@ import { Client } from './dto/schemas/client.schema';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { ClientListResponse } from './types/client-list-response.type';
+import { ClientResponse } from './types/client-default-response.type';
 
 @Injectable()
 export class AppService {
@@ -12,34 +13,58 @@ export class AppService {
     @InjectModel(Client.name) private readonly clientModel: Model<Client>,
   ) {}
 
-  async create(clientData: CreateClientDto): Promise<Client> {
+  async create(clientData: CreateClientDto): Promise<ClientResponse> {
     const createdClient = new this.clientModel(clientData);
-    return createdClient.save();
+    const result = await createdClient.save();
+    return {
+      result,
+      message: 'Successfully Created the document in Model ',
+      success: true,
+    };
   }
 
-  async getClientById(id: string): Promise<Client | null> {
-    return this.clientModel.findById(id).exec();
+  async getClientById(id: string): Promise<ClientResponse> {
+    const result = await this.clientModel.findById(id).exec();
+    return {
+      result,
+      message: 'Successfully Created the document in Model ',
+      success: true,
+    };
   }
 
   async updateClient(
     id: string,
     updateClientData: UpdateClientDto,
-  ): Promise<Client | null> {
-    const updatedClient = await this.clientModel
+  ): Promise<ClientResponse> {
+    const result = await this.clientModel
       .findByIdAndUpdate(id, updateClientData, { new: true })
       .exec();
-    if (!updatedClient) {
+    if (!result) {
       throw new NotFoundException(`Client #${id} not found`);
     }
-    return updatedClient;
+    return {
+      result,
+      message: 'Successfully updated the document in Model ',
+      success: true,
+    };
   }
 
-  async deleteClient(id: string): Promise<Client | null> {
-    return this.clientModel.findByIdAndDelete(id).exec();
+  async deleteClient(id: string): Promise<ClientResponse> {
+    const result = await this.clientModel.findByIdAndDelete(id).exec();
+    return {
+      result,
+      message: 'Successfully deleted the document in Model ',
+      success: true,
+    };
   }
 
-  async searchClients(query: any): Promise<Client[]> {
-    return this.clientModel.find(query).exec();
+  async searchClients(query: any): Promise<ClientResponse> {
+    const result = await this.clientModel.find(query).exec();
+    return {
+      result,
+      message: 'Successfully Created the document in Model ',
+      success: true,
+    };
   }
 
   async listClients(page: number, limit: number): Promise<ClientListResponse> {
@@ -48,10 +73,16 @@ export class AppService {
     const count = await this.clientModel.countDocuments({}).exec();
     const page_total = Math.floor((count - 1) / limit) + 1;
     const data = await this.clientModel.find().limit(limit).skip(skip).exec();
+    const message = data.length === 0 ? 'Collection empty' : 'Success';
     return {
-      data: data,
-      count: page_total,
-      status: 200,
+      result: data,
+      pagination: {
+        page: String(page),
+        pages: page_total,
+        count,
+      },
+      message: message,
+      success: true,
     };
   }
 }

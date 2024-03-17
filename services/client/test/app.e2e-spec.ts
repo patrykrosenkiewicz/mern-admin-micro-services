@@ -79,7 +79,10 @@ describe('AppController (e2e)', () => {
     return request(app.getHttpServer())
       .post(`${BASE_URL}/create`)
       .send(clientData)
-      .expect(201);
+      .expect(201)
+      .expect(({ body }) => {
+        expect(Object.keys(body)).toEqual(['result', 'message', 'success']);
+      });
   });
 
   it(`${BASE_URL}/read/:id (GET)`, async () => {
@@ -108,7 +111,8 @@ describe('AppController (e2e)', () => {
       .send({ name: UPDATED_CLIENT_NAME })
       .expect(200)
       .expect(({ body }) => {
-        expect(body.name).toEqual(UPDATED_CLIENT_NAME);
+        expect(body.result.name).toEqual(UPDATED_CLIENT_NAME);
+        expect(Object.keys(body)).toEqual(['result', 'message', 'success']);
       });
   });
 
@@ -125,7 +129,8 @@ describe('AppController (e2e)', () => {
       .delete(`${BASE_URL}/delete/${client.id}`)
       .expect(200)
       .expect(({ body }) => {
-        expect(body.name).toEqual(clientDataExisting.name);
+        expect(body.result.name).toEqual(clientDataExisting.name);
+        expect(Object.keys(body)).toEqual(['result', 'message', 'success']);
       });
   });
 
@@ -144,8 +149,9 @@ describe('AppController (e2e)', () => {
       .query(queryParams)
       .expect(200)
       .expect(({ body }) => {
-        expect(body.length).toEqual(1);
-        expect(body[0].name).toEqual(clientDataExisting.name);
+        expect(Object.keys(body)).toEqual(['result', 'message', 'success']);
+        expect(body.result.length).toEqual(1);
+        expect(body.result[0].name).toEqual(clientDataExisting.name);
       });
   });
 
@@ -157,8 +163,19 @@ describe('AppController (e2e)', () => {
       .get(`${BASE_URL}/list`)
       .expect(200)
       .expect(({ body }) => {
-        expect(body.data.length).toEqual(1);
-        expect(body.data[0].name).toEqual(clientDataExisting.name);
+        expect(Object.keys(body)).toEqual([
+          'result',
+          'pagination',
+          'message',
+          'success',
+        ]);
+        expect(Object.keys(body.pagination)).toEqual([
+          'page',
+          'pages',
+          'count',
+        ]);
+        expect(body.result.length).toEqual(1);
+        expect(body.result[0].name).toEqual(clientDataExisting.name);
       });
   });
 
@@ -169,7 +186,7 @@ describe('AppController (e2e)', () => {
     return request(app.getHttpServer())
       .get(`${BASE_URL}/list?page=3`)
       .expect(({ body }) => {
-        expect(body.data.length).toEqual(0);
+        expect(body.result.length).toEqual(0);
       });
   });
 });
