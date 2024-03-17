@@ -19,6 +19,8 @@ import { PaginationDto } from './dto/pagination.dto';
 import { paginationValidator } from './dto/validators/pagination.validator';
 import { ClientListResponse } from './types/client-list-response.type';
 import { ClientResponse } from './types/client-default-response.type';
+import { searchClientValidator } from './dto/validators/search-client.validator';
+import { SearchClientDto } from './dto/search-client.dto';
 
 @Controller('/service/client')
 export class AppController {
@@ -51,7 +53,10 @@ export class AppController {
   }
 
   @Get('search')
-  async searchClients(@Query() query: any): Promise<ClientResponse> {
+  @UsePipes(new ZodValidationPipe(searchClientValidator))
+  async searchClients(
+    @Query() query: SearchClientDto,
+  ): Promise<ClientResponse> {
     return this.appService.searchClients(query);
   }
 

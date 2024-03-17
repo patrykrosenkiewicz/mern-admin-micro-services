@@ -139,9 +139,10 @@ describe('AppController (e2e)', () => {
     await testClient.save();
     const testClient2 = new clientModel(clientData);
     await testClient2.save();
+
     const queryParams = {
-      name: clientDataExisting.name,
-      company: clientDataExisting.company,
+      fields: 'name,company,surname',
+      q: 'Mock Company EXISTS',
     };
 
     return request(app.getHttpServer())
@@ -152,6 +153,26 @@ describe('AppController (e2e)', () => {
         expect(Object.keys(body)).toEqual(['result', 'message', 'success']);
         expect(body.result.length).toEqual(1);
         expect(body.result[0].name).toEqual(clientDataExisting.name);
+      });
+  });
+
+  it(`${BASE_URL}/search not existing client (GET)`, async () => {
+    const testClient = new clientModel(clientDataExisting);
+    await testClient.save();
+    const testClient2 = new clientModel(clientData);
+    await testClient2.save();
+    const queryParams = {
+      fields: 'name,company,surname',
+      q: '12312321321312321321',
+    };
+
+    return request(app.getHttpServer())
+      .get(`${BASE_URL}/search`)
+      .query(queryParams)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(Object.keys(body)).toEqual(['result', 'message', 'success']);
+        expect(body.result.length).toEqual(0);
       });
   });
 

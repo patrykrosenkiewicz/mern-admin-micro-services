@@ -6,6 +6,7 @@ import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { ClientListResponse } from './types/client-list-response.type';
 import { ClientResponse } from './types/client-default-response.type';
+import { SearchClientDto } from './dto/search-client.dto';
 
 @Injectable()
 export class AppService {
@@ -58,11 +59,19 @@ export class AppService {
     };
   }
 
-  async searchClients(query: any): Promise<ClientResponse> {
-    const result = await this.clientModel.find(query).exec();
+  async searchClients(query: SearchClientDto): Promise<ClientResponse> {
+    const fieldsArray = query.fields.split(',');
+
+    const fields = { $or: [] };
+
+    for (const field of fieldsArray) {
+      fields.$or.push({ [field]: { $regex: new RegExp(query.q, 'i') } });
+    }
+
+    const result = await this.clientModel.find(fields).exec();
     return {
       result,
-      message: 'Successfully Created the document in Model ',
+      message: 'Successfully Searched the document in Model ',
       success: true,
     };
   }
