@@ -6,6 +6,9 @@ export type LeadDocument = HydratedDocument<Lead>;
 @Schema({ timestamps: true })
 export class Lead {
   @Prop({ required: true })
+  date: Date;
+
+  @Prop({ required: true })
   client: string;
 
   @Prop({ required: true })
@@ -22,9 +25,6 @@ export class Lead {
 
   @Prop({ required: true, default: 'PENDING' }) //TODO move to enum
   status: string;
-
-  @Prop({ default: false })
-  isLoggedIn: boolean;
 }
 
 export const LeadSchema = SchemaFactory.createForClass(Lead);

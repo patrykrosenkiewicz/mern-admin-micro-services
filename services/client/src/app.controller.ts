@@ -13,7 +13,6 @@ import { AppService } from './app.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { ZodValidationPipe } from './pipes/zod-validation.pipe';
 import { createClientSchema } from './dto/validators/create-client.validator';
-import { Client } from './dto/schemas/client.schema';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { PaginationDto } from './dto/pagination.dto';
 import { paginationValidator } from './dto/validators/pagination.validator';

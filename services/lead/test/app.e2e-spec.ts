@@ -1,83 +1,192 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AppModule } from '../src/app.module';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-const BASE_URL = '/service/lead'; // Define the BASE_URL
+import { AppModule } from '../src/app.module';
+import { Lead } from '../src/dto/schemas/lead.schema';
+import {
+  closeInMongodConnection,
+  rootMongooseTestModule,
+} from './test-utils/mongo/MongooseTestModule';
+import { Model } from 'mongoose';
+import { getModelToken } from '@nestjs/mongoose';
 
-describe('LeadController (e2e)', () => {
+const BASE_URL = '/service/lead';
+const leadData: Lead = {
+  date: new Date(),
+  client: 'John Doe',
+  phone: '+1234567890',
+  email: 'johndoe@example.com',
+  budget: '$5000',
+  request: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+  status: 'Pending',
+};
+
+const leadDataExisting: Lead = {
+  date: new Date(2023, 5, 15), // June 15, 2023,
+  client: 'John Doe EXISTS',
+  phone: '+1234567890 EXISTS',
+  email: 'johndoe@example.com EXISTS',
+  budget: '$5000 EXISTS',
+  request: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. EXISTS',
+  status: 'Pending',
+};
+
+describe('AppController (e2e)', () => {
   let app: INestApplication;
+  let leadModel: Model<Lead>;
 
-  beforeEach(async () => {
+  afterAll(async () => {
+    await leadModel.deleteMany({});
+    await closeInMongodConnection();
+    await app.close();
+  });
+
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [AppModule, rootMongooseTestModule()],
     }).compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
+    leadModel = moduleFixture.get<Model<Lead>>(getModelToken('Lead'));
   });
 
-  afterEach(async () => {
-    await app.close();
+  beforeEach(async () => {
+    await leadModel.deleteMany({});
   });
 
   it(`${BASE_URL}/create (POST)`, async () => {
-    const leadData = {
-      // Provide valid lead data for creation
-      // Example: { name: 'Lead Name', email: 'lead@example.com' }
-    };
-
     return request(app.getHttpServer())
       .post(`${BASE_URL}/create`)
       .send(leadData)
-      .expect(201);
+      .expect(201)
+      .expect(({ body }) => {
+        expect(Object.keys(body)).toEqual(['result', 'message', 'success']);
+      });
   });
 
   it(`${BASE_URL}/read/:id (GET)`, async () => {
-    // Replace ':id' with an actual ID for the lead
-    const leadId = 123; // Replace 123 with an actual lead ID
-
+    const testLead = new leadModel(leadDataExisting);
+    await testLead.save();
+    const lead = await leadModel.findOne({
+      client: { $eq: leadDataExisting.client },
+    });
     return request(app.getHttpServer())
-      .get(`${BASE_URL}/read/${leadId}`)
+      .get(`${BASE_URL}/read/${lead.id}`)
       .expect(200);
   });
 
   it(`${BASE_URL}/update/:id (PATCH)`, async () => {
-    // Replace ':id' with an actual ID for the lead
-    const leadId = 123; // Replace 123 with an actual lead ID
-    const updatedLeadData = {
-      // Provide updated lead data
-      // Example: { name: 'Updated Lead Name' }
-    };
+    const testLead = new leadModel(leadDataExisting);
+    await testLead.save();
+
+    const UPDATED_LEAD_CLIENT = 'updated lead client';
+    const lead = await leadModel.findOne({
+      client: { $eq: leadDataExisting.client },
+    });
 
     return request(app.getHttpServer())
-      .patch(`${BASE_URL}/update/${leadId}`)
-      .send(updatedLeadData)
-      .expect(200);
+      .patch(`${BASE_URL}/update/${lead.id}`)
+      .send({ client: UPDATED_LEAD_CLIENT })
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body.result.client).toEqual(UPDATED_LEAD_CLIENT);
+        expect(Object.keys(body)).toEqual(['result', 'message', 'success']);
+      });
   });
 
   it(`${BASE_URL}/delete/:id (DELETE)`, async () => {
-    // Replace ':id' with an actual ID for the lead
-    const leadId = 123; // Replace 123 with an actual lead ID
+    const testLead = new leadModel(leadDataExisting);
+    await testLead.save();
+    const testLead2 = new leadModel(leadData);
+    await testLead2.save();
+    const lead = await leadModel.findOne({
+      client: { $eq: leadDataExisting.client },
+    });
 
     return request(app.getHttpServer())
-      .delete(`${BASE_URL}/delete/${leadId}`)
-      .expect(200);
+      .delete(`${BASE_URL}/delete/${lead.id}`)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body.result.client).toEqual(leadDataExisting.client);
+        expect(Object.keys(body)).toEqual(['result', 'message', 'success']);
+      });
   });
 
   it(`${BASE_URL}/search (GET)`, async () => {
-    // Provide valid query parameters for searching
-    // Example: { name: 'Lead Name' }
+    const testLead = new leadModel(leadDataExisting);
+    await testLead.save();
+    const testLead2 = new leadModel(leadData);
+    await testLead2.save();
+
     const queryParams = {
-      // Provide valid query parameters for searching
+      fields: 'client',
+      q: 'John Doe EXISTS',
     };
 
     return request(app.getHttpServer())
       .get(`${BASE_URL}/search`)
       .query(queryParams)
-      .expect(200);
+      .expect(200)
+      .expect(({ body }) => {
+        expect(Object.keys(body)).toEqual(['result', 'message', 'success']);
+        expect(body.result.length).toEqual(1);
+        expect(body.result[0].client).toEqual(leadDataExisting.client);
+      });
+  });
+
+  it(`${BASE_URL}/search not existing lead (GET)`, async () => {
+    const testLead = new leadModel(leadDataExisting);
+    await testLead.save();
+    const testLead2 = new leadModel(leadData);
+    await testLead2.save();
+    const queryParams = {
+      fields: 'name,lead,surname',
+      q: '12312321321312321321',
+    };
+
+    return request(app.getHttpServer())
+      .get(`${BASE_URL}/search`)
+      .query(queryParams)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(Object.keys(body)).toEqual(['result', 'message', 'success']);
+        expect(body.result.length).toEqual(0);
+      });
   });
 
   it(`${BASE_URL}/list (GET)`, async () => {
-    return request(app.getHttpServer()).get(`${BASE_URL}/list`).expect(200);
+    const testLead = new leadModel(leadDataExisting);
+    await testLead.save();
+
+    return request(app.getHttpServer())
+      .get(`${BASE_URL}/list`)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(Object.keys(body)).toEqual([
+          'result',
+          'pagination',
+          'message',
+          'success',
+        ]);
+        expect(Object.keys(body.pagination)).toEqual([
+          'page',
+          'pages',
+          'count',
+        ]);
+        expect(body.result.length).toEqual(1);
+        expect(body.result[0].client).toEqual(leadDataExisting.client);
+      });
+  });
+
+  it(`${BASE_URL}/list not existing page (GET)`, async () => {
+    const testLead = new leadModel(leadDataExisting);
+    await testLead.save();
+
+    return request(app.getHttpServer())
+      .get(`${BASE_URL}/list?page=3`)
+      .expect(({ body }) => {
+        expect(body.result.length).toEqual(0);
+      });
   });
 });
