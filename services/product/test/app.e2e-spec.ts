@@ -1,83 +1,194 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AppModule } from '../src/app.module';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-const BASE_URL = '/service/product'; // Define the BASE_URL
+import { AppModule } from '../src/app.module';
+import { Product } from '../src/dto/schemas/product.schema';
+import {
+  closeInMongodConnection,
+  rootMongooseTestModule,
+} from './test-utils/mongo/MongooseTestModule';
+import { Model } from 'mongoose';
+import { getModelToken } from '@nestjs/mongoose';
 
-describe('ProductController (e2e)', () => {
+const BASE_URL = '/service/product';
+const productData: Product = {
+  enabled: true,
+  productName: 'Sample Product',
+  description: 'This is a sample product description.',
+  price: '10.99',
+  status: 'available',
+};
+
+const productDataExisting: Product = {
+  enabled: true,
+  productName: 'Sample Product EXISTING',
+  description: 'This is a sample product description.',
+  price: '10.99',
+  status: 'available',
+};
+
+describe('AppController (e2e)', () => {
   let app: INestApplication;
+  let productModel: Model<Product>;
 
-  beforeEach(async () => {
+  afterAll(async () => {
+    await productModel.deleteMany({});
+    await closeInMongodConnection();
+    await app.close();
+  });
+
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [AppModule, rootMongooseTestModule()],
     }).compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
+    productModel = moduleFixture.get<Model<Product>>(getModelToken('Product'));
   });
 
-  afterEach(async () => {
-    await app.close();
+  beforeEach(async () => {
+    await productModel.deleteMany({});
   });
 
   it(`${BASE_URL}/create (POST)`, async () => {
-    const productData = {
-      // Provide valid product data for creation
-      // Example: { name: 'Product Name', price: 99.99 }
-    };
-
     return request(app.getHttpServer())
       .post(`${BASE_URL}/create`)
       .send(productData)
-      .expect(201);
+      .expect(201)
+      .expect(({ body }) => {
+        expect(Object.keys(body)).toEqual(['result', 'message', 'success']);
+      });
   });
 
   it(`${BASE_URL}/read/:id (GET)`, async () => {
-    // Replace ':id' with an actual ID for the product
-    const productId = 123; // Replace 123 with an actual product ID
-
+    const testLead = new productModel(productDataExisting);
+    await testLead.save();
+    const product = await productModel.findOne({
+      productName: { $eq: productDataExisting.productName },
+    });
     return request(app.getHttpServer())
-      .get(`${BASE_URL}/read/${productId}`)
+      .get(`${BASE_URL}/read/${product.id}`)
       .expect(200);
   });
 
   it(`${BASE_URL}/update/:id (PATCH)`, async () => {
-    // Replace ':id' with an actual ID for the product
-    const productId = 123; // Replace 123 with an actual product ID
-    const updatedProductData = {
-      // Provide updated product data
-      // Example: { name: 'Updated Product Name' }
-    };
+    const testLead = new productModel(productDataExisting);
+    await testLead.save();
+
+    const UPDATED_LEAD_CLIENT = 'updated product name';
+    const product = await productModel.findOne({
+      productName: { $eq: productDataExisting.productName },
+    });
 
     return request(app.getHttpServer())
-      .patch(`${BASE_URL}/update/${productId}`)
-      .send(updatedProductData)
-      .expect(200);
+      .patch(`${BASE_URL}/update/${product.id}`)
+      .send({ productName: UPDATED_LEAD_CLIENT })
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body.result.productName).toEqual(UPDATED_LEAD_CLIENT);
+        expect(Object.keys(body)).toEqual(['result', 'message', 'success']);
+      });
   });
 
   it(`${BASE_URL}/delete/:id (DELETE)`, async () => {
-    // Replace ':id' with an actual ID for the product
-    const productId = 123; // Replace 123 with an actual product ID
+    const testLead = new productModel(productDataExisting);
+    await testLead.save();
+    const testLead2 = new productModel(productData);
+    await testLead2.save();
+    const product = await productModel.findOne({
+      productName: { $eq: productDataExisting.productName },
+    });
 
     return request(app.getHttpServer())
-      .delete(`${BASE_URL}/delete/${productId}`)
-      .expect(200);
+      .delete(`${BASE_URL}/delete/${product.id}`)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body.result.productName).toEqual(
+          productDataExisting.productName,
+        );
+        expect(Object.keys(body)).toEqual(['result', 'message', 'success']);
+      });
   });
 
   it(`${BASE_URL}/search (GET)`, async () => {
-    // Provide valid query parameters for searching
-    // Example: { name: 'Product Name' }
+    const testLead = new productModel(productDataExisting);
+    await testLead.save();
+    const testLead2 = new productModel(productData);
+    await testLead2.save();
+
     const queryParams = {
-      // Provide valid query parameters for searching
+      fields: 'productName',
+      q: 'EXISTING',
     };
 
     return request(app.getHttpServer())
       .get(`${BASE_URL}/search`)
       .query(queryParams)
-      .expect(200);
+      .expect(200)
+      .expect(({ body }) => {
+        expect(Object.keys(body)).toEqual(['result', 'message', 'success']);
+        expect(body.result.length).toEqual(1);
+        expect(body.result[0].productName).toEqual(
+          productDataExisting.productName,
+        );
+      });
+  });
+
+  it(`${BASE_URL}/search not existing product (GET)`, async () => {
+    const testLead = new productModel(productDataExisting);
+    await testLead.save();
+    const testLead2 = new productModel(productData);
+    await testLead2.save();
+    const queryParams = {
+      fields: 'productName',
+      q: '12312321321312321321',
+    };
+
+    return request(app.getHttpServer())
+      .get(`${BASE_URL}/search`)
+      .query(queryParams)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(Object.keys(body)).toEqual(['result', 'message', 'success']);
+        expect(body.result.length).toEqual(0);
+      });
   });
 
   it(`${BASE_URL}/list (GET)`, async () => {
-    return request(app.getHttpServer()).get(`${BASE_URL}/list`).expect(200);
+    const testLead = new productModel(productDataExisting);
+    await testLead.save();
+
+    return request(app.getHttpServer())
+      .get(`${BASE_URL}/list`)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(Object.keys(body)).toEqual([
+          'result',
+          'pagination',
+          'message',
+          'success',
+        ]);
+        expect(Object.keys(body.pagination)).toEqual([
+          'page',
+          'pages',
+          'count',
+        ]);
+        expect(body.result.length).toEqual(1);
+        expect(body.result[0].productName).toEqual(
+          productDataExisting.productName,
+        );
+      });
+  });
+
+  it(`${BASE_URL}/list not existing page (GET)`, async () => {
+    const testLead = new productModel(productDataExisting);
+    await testLead.save();
+
+    return request(app.getHttpServer())
+      .get(`${BASE_URL}/list?page=3`)
+      .expect(({ body }) => {
+        expect(body.result.length).toEqual(0);
+      });
   });
 });
