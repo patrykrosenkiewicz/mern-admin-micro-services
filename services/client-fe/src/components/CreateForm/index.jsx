@@ -20,13 +20,13 @@ export default function CreateForm({ config, formElements }) {
       if (fieldsValue.birthday) {
         fieldsValue = {
           ...fieldsValue,
-          birthday: fieldsValue["birthday"].format("DD/MM/YYYY"),
+          birthday: fieldsValue["birthday"].format("MM/DD/YYYY"),
         };
       }
       if (fieldsValue.date) {
         fieldsValue = {
           ...fieldsValue,
-          date: fieldsValue["date"].format("DD/MM/YYYY"),
+          date: fieldsValue["date"].format("MM/DD/YYYY"),
         };
       }
     }

@@ -47,7 +47,7 @@ function FormElement({
           ))}
         </Select>
       }
-      else if(fieldType === "date"){<DatePicker format={"DD/MM/YYYY"} />}
+      else if(fieldType === "date"){<DatePicker format={"MM/DD/YYYY"} />}
       else {<Component />}
     </Form.Item>
   );

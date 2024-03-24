@@ -23,13 +23,13 @@ export default function UpdateForm({ config, formElements }) {
       if (fieldsValue.birthday) {
         fieldsValue = {
           ...fieldsValue,
-          birthday: fieldsValue["birthday"].format("DD/MM/YYYY"),
+          birthday: fieldsValue["birthday"].format("MM/DD/YYYY"),
         };
       }
       if (fieldsValue.date) {
         fieldsValue = {
           ...fieldsValue,
-          birthday: fieldsValue["date"].format("DD/MM/YYYY"),
+          birthday: fieldsValue["date"].format("MM/DD/YYYY"),
         };
       }
     }

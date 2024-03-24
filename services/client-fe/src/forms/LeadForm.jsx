@@ -55,7 +55,7 @@ export default function LeadForm({ isUpdateForm = false }) {
           },
         ]}
       >
-        <DatePicker format={"DD/MM/YYYY"} />
+        <DatePicker format={"MM/DD/YYYY"} />
       </Form.Item>
       <Form.Item
         label="Budget"
